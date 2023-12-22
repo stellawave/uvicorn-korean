@@ -28,7 +28,11 @@ Uvicorn은 현재 HTTP/1.1과 웹소켓을 지원하고 있습니다.
 한국어 학습자를 위해 문서, 주석에 있는 영어를 최대한 번역하는 것을 목표로 합니다.
 uvicorn Version 0.25.0을 기반으로 번역되었으며 학습 목적으로 사용하시는 것을 추천합니다. 
 
+<br/>
+
 ---
+
+<br/>
 
 ## 빠른 시작
 
@@ -104,7 +108,7 @@ ASGI 프로토콜의 강점은 서버 구현을 애플리케이션 프레임워�
 
 ### Daphne
 
-원래 Django Channels을 구동하기 위해 개발된 최초의 ASGI 서버 구현은 [Daphne webserver][daphne]입니다..
+[Daphne webserver][daphne]은 원래 Django Channels을 구동하기 위해 개발된, 최초의 ASGI 서버 구현입니다.
 
 이 서버는 프로덕션 환경에서 광범위하게 실행되고 있으며 HTTP/1.1, HTTP/2 및 웹소켓을 지원합니다.
 
