@@ -291,15 +291,15 @@ $ uvicorn --factory main:create_app
 
 ## ASGI 인터페이스
 
-Uvicorn uses the [ASGI specification][asgi] for interacting with an application.
+Uvicorn은 애플리케이션과 상호작용하기 위해 [ASGI 사양][asgi]을 사용합니다.
 
-The application should expose an async callable which takes three arguments:
+애플리케이션은 세 개의 인수를 받는 비동기 콜러블을 노출해야 합니다:
 
-* `scope` - A dictionary containing information about the incoming connection.
-* `receive` - A channel on which to receive incoming messages from the server.
-* `send` - A channel on which to send outgoing messages to the server.
+* `scope` - 들어오는 연결에 대한 정보가 포함된 딕셔너리입니다.
+* `receive` - 서버로부터 들어오는 메시지를 받기 위한 채널입니다.
+* `send` - 서버로 나가는 메시지를 보내기 위한 채널입니다.
 
-Two common patterns you might use are either function-based applications:
+두 가지 일반적인 패턴을 사용할 수 있는 데, 하나는 함수 기반 애플리케이션입니다:
 
 ```python
 async def app(scope, receive, send):
@@ -307,7 +307,7 @@ async def app(scope, receive, send):
     ...
 ```
 
-Or instance-based applications:
+또는 인스턴스 기반 애플리케이션입니다:
 
 ```python
 class App:
@@ -318,16 +318,15 @@ class App:
 app = App()
 ```
 
-It's good practice for applications to raise an exception on scope types
-that they do not handle.
+애플리케이션이 처리하지 않는 범위 유형에 대해서는 예외를 발생시키는 것이 좋습니다.
 
-The content of the `scope` argument, and the messages expected by `receive` and `send` depend on the protocol being used.
+`scope` 인수의 내용과, `receive` 및 `send`에서 예상되는 메시지는 사용 중인 프로토콜에 따라 달라집니다.
 
-The format for HTTP messages is described in the [ASGI HTTP Message format][asgi-http].
+HTTP 메시지 형식은 [ASGI HTTP 메시지 형식][asgi-http]에 설명되어 있습니다.
 
 ### HTTP Scope
 
-An incoming HTTP request might have a connection `scope` like this:
+들어오는 HTTP 요청의 연결 `scope`는 다음과 같을 수 있습니다:
 
 ```python
 {
@@ -346,9 +345,9 @@ An incoming HTTP request might have a connection `scope` like this:
 }
 ```
 
-### HTTP Messages
+### HTTP 메시지
 
-The instance coroutine communicates back to the server by sending messages to the `send` coroutine.
+인스턴스 코루틴은 `send` 코루틴에 메시지를 보내 서버와 다시 통신합니다.
 
 ```python
 await send({
@@ -364,14 +363,14 @@ await send({
 })
 ```
 
-### Requests & responses
+### 요청 & 응답
 
-Here's an example that displays the method and path used in the incoming request:
+다음은 수신 요청에 사용된 메서드와 경로를 표시하는 예제입니다:
 
 ```python
 async def app(scope, receive, send):
     """
-    Echo the method and path back in an HTTP response.
+    메서드와 경로를 HTTP 응답으로 되돌려 보냅니다.
     """
     assert scope['type'] == 'http'
 
@@ -389,15 +388,14 @@ async def app(scope, receive, send):
     })
 ```
 
-### Reading the request body
+### 요청 본문 읽기
 
-You can stream the request body without blocking the asyncio task pool,
-by fetching messages from the `receive` coroutine.
+`send` 코루틴에서 메시지를 가져와서 비동기 작업 풀을 차단하지 않고 요청 본문을 스트리밍할 수 있습니다.
 
 ```python
 async def read_body(receive):
     """
-    Read and return the entire body from an incoming ASGI message.
+    수신되는 ASGI 메시지에서 본문 전체를 읽고 반환합니다.
     """
     body = b''
     more_body = True
@@ -412,7 +410,7 @@ async def read_body(receive):
 
 async def app(scope, receive, send):
     """
-    Echo the request body back in an HTTP response.
+    요청 본문을 HTTP 응답으로 되돌려 보냅니다.
     """
     body = await read_body(receive)
     await send({
@@ -429,10 +427,9 @@ async def app(scope, receive, send):
     })
 ```
 
-### Streaming responses
+### 응답 스트리밍
 
-You can stream responses by sending multiple `http.response.body` messages to
-the `send` coroutine.
+`send` 코루틴에 여러 개의 `http.response.body` 메시지를 전송하여 응답을 스트리밍할 수 있습니다.
 
 ```python
 import asyncio
@@ -440,7 +437,7 @@ import asyncio
 
 async def app(scope, receive, send):
     """
-    Send a slowly streaming HTTP response back to the client.
+    클라이언트에 느리게 스트리밍되는 HTTP 응답을 다시 보냅니다.
     """
     await send({
         'type': 'http.response.start',
@@ -464,33 +461,32 @@ async def app(scope, receive, send):
 
 ---
 
-## Why ASGI?
+## 왜 ASGI인가?
 
-Most well established Python Web frameworks started out as WSGI-based frameworks.
+잘 정립된 대부분의 Python 웹 프레임워크는 WSGI 기반 프레임워크로 시작되었습니다.
 
-WSGI applications are a single, synchronous callable that takes a request and returns a response.
-This doesn’t allow for long-lived connections, like you get with long-poll HTTP or WebSocket connections,
-which WSGI doesn't support well.
+WSGI 애플리케이션은 요청을 받아 응답을 반환하는 단일 동기 호출 가능 객체입니다. 
+이것은 WSGI가 잘 지원하지 않는, 긴 지속성을 가진 연결(예를 들어, 롱 폴링 HTTP 또는 WebSocket 연결)을 
+허용하지 않습니다.
 
-Having an async concurrency model also allows for options such as lightweight background tasks,
-and can be less of a limiting factor for endpoints that have long periods being blocked on network
-I/O such as dealing with slow HTTP requests.
+비동기 동시성 모델을 가짐으로써 가벼운 백그라운드 작업과 같은 옵션을 허용하며, 
+느린 HTTP 요청과 같이 네트워크 I/O에 오랫동안 차단되는 엔드포인트에 대한 
+제한 요소가 줄어들 수 있습니다.
 
 ---
 
-## Alternative ASGI servers
+## 대체 ASGI 서버들
 
-A strength of the ASGI protocol is that it decouples the server implementation
-from the application framework. This allows for an ecosystem of interoperating
-webservers and application frameworks.
+ASGI 프로토콜의 강점은 서버 구현을 애플리케이션 프레임워크에서 분리한다는 점입니다. 
+이를 통해 상호 운용되는 웹 서버와 애플리케이션 프레임워크의 생태계를 구축할 수 있습니다.
 
 ### Daphne
 
-The first ASGI server implementation, originally developed to power Django Channels, is [the Daphne webserver][daphne].
+[Daphne webserver][daphne]은 원래 Django Channels을 구동하기 위해 개발된, 최초의 ASGI 서버 구현입니다.
 
-It is run widely in production, and supports HTTP/1.1, HTTP/2, and WebSockets.
+이 서버는 프로덕션 환경에서 광범위하게 실행되고 있으며 HTTP/1.1, HTTP/2 및 웹소켓을 지원합니다.
 
-Any of the example applications given here can equally well be run using `daphne` instead.
+여기서 제공된 예제 애플리케이션 중 어느 것이든 `daphne`을 사용하여 똑같이 실행할 수 있습니다.
 
 ```
 $ pip install daphne
@@ -499,10 +495,9 @@ $ daphne app:App
 
 ### Hypercorn
 
-[Hypercorn][hypercorn] was initially part of the Quart web framework, before
-being separated out into a standalone ASGI server.
+[Hypercorn][hypercorn]은 처음에 Quart 웹 프레임워크의 일부였으나 독립형 ASGI 서버로 분리되었습니다.
 
-Hypercorn supports HTTP/1.1, HTTP/2, HTTP/3 and WebSockets.
+Hypercorn HTTP/1.1, HTTP/2, HTTP/3과 웹소켓을 지원합니다.
 
 ```
 $ pip install hypercorn
@@ -511,56 +506,55 @@ $ hypercorn app:App
 
 ---
 
-## ASGI frameworks
+## ASGI 프레임워크들
 
-You can use Uvicorn, Daphne, or Hypercorn to run any ASGI framework.
+Uvicorn, Daphne, 또는 Hypercorn을 사용하여 모든 ASGI 프레임워크를 실행할 수 있습니다.
 
-For small services you can also write ASGI applications directly.
+소규모 서비스의 경우 ASGI 애플리케이션을 직접 작성할 수도 있습니다.
 
 ### Starlette
 
-[Starlette](https://github.com/encode/starlette) is a lightweight ASGI framework/toolkit.
+[Starlette](https://github.com/encode/starlette)은 경량 ASGI 프레임워크/툴킷입니다.
 
-It is ideal for building high performance asyncio services, and supports both HTTP and WebSockets.
+고성능 비동기 서비스를 구축하는 데 이상적이며 HTTP와 웹소켓 모두 지원합니다.
 
 ### Django Channels
 
-The ASGI specification was originally designed for use with [Django Channels](https://channels.readthedocs.io/en/latest/).
+ASGI 사양은 원래 [Django Channels](https://channels.readthedocs.io/en/latest/)과 함께 사용하도록 설계되었습니다.
 
-Channels is a little different to other ASGI frameworks in that it provides
-an asynchronous frontend onto a threaded-framework backend. It allows Django
-to support WebSockets, background tasks, and long-running connections,
-with application code still running in a standard threaded context.
+Channels는 비동기 프론트엔드를 스레드 기반 백엔드에 제공한다는 점에서 다른 ASGI 프레임워크와 약간 다릅니다. 
+이를 통해 Django는 웹소켓, 백그라운드 작업 및 장시간 실행되는 연결을 지원할 수 있으며, 
+응용 프로그램 코드는 여전히 표준 스레드 컨텍스트에서 실행됩니다.
 
 ### Quart
 
-[Quart](https://pgjones.gitlab.io/quart/) is a Flask-like ASGI web framework.
+[Quart](https://pgjones.gitlab.io/quart/)는 Flask와 유사한 ASGI 웹 프레임워크입니다.
 
 ### FastAPI
 
-[**FastAPI**](https://github.com/tiangolo/fastapi) is an API framework based on **Starlette** and **Pydantic**, heavily inspired by previous server versions of **APIStar**.
+[**FastAPI**](https://github.com/tiangolo/fastapi)은 Starlette과 Pydantic을 기반으로 한, 이전 서버 버전인 APIStar에서 크게 영감을 받은 API 프레임워크입니다.
 
-You write your API function parameters with Python 3.6+ type declarations and get automatic data conversion, data validation, OpenAPI schemas (with JSON Schemas) and interactive API documentation UIs.
+Python 3.6+ 타입 선언을 사용하여 API 함수 매개변수를 작성하면 자동 데이터 변환, 데이터 유효성 검사, OpenAPI 스키마(JSON 스키마 포함) 및 대화형 API 문서화 UI를 얻을 수 있습니다.
 
 ### BlackSheep
 
-[BlackSheep](https://www.neoteroi.dev/blacksheep/) is a web framework based on ASGI, inspired by Flask and ASP.NET Core.
+[BlackSheep](https://www.neoteroi.dev/blacksheep/)는 Flask와 ASP.NET Core에서 영감을 받은 ASGI 기반의 웹 프레임워크입니다.
 
-Its most distinctive features are built-in support for dependency injection, automatic binding of parameters by request handler's type annotations, and automatic generation of OpenAPI documentation and Swagger UI.
+이 프레임워크의 가장 독특한 특징은 의존성 주입에 대한 내장 지원, 요청 핸들러의 타입 주석에 의한 매개변수 자동 바인딩, OpenAPI 문서 및 Swagger UI의 자동 생성입니다.
 
 ### Falcon
 
-[Falcon](https://falconframework.org) is a minimalist REST and app backend framework for Python, with a focus on reliability, correctness, and performance at scale.
+[Falcon](https://falconframework.org)은 Python을 위한 최소주의적인 REST 및 애플리케이션 백엔드 프레임워크로, 신뢰성, 정확성 및 대규모 성능에 중점을 둡니다.
 
 ### Muffin
 
-[Muffin](https://github.com/klen/muffin) is a fast, lightweight and asynchronous ASGI web-framework for Python 3.
+[Muffin](https://github.com/klen/muffin)은 Python 3을 위한 빠르고 가벼우며 비동기적인 ASGI 웹 프레임워크입니다.
 
 ### Litestar
 
-[**Litestar**](https://litestar.dev) is a powerful, lightweight and flexible ASGI framework.
+[**Litestar**](https://litestar.dev)는 강력하고 가벼우며 유연한 ASGI 프레임워크입니다.
 
-It includes everything that's needed to build modern APIs - from data serialization and validation to websockets, ORM integration, session management, authentication and more.
+이 프레임워크에는 데이터 직렬화 및 검증부터 웹소켓, ORM 통합, 세션 관리, 인증 등 현대적인 API를 구축하는 데 필요한 모든 것이 포함되어 있습니다.
 
 
 [uvloop]: https://github.com/MagicStack/uvloop
