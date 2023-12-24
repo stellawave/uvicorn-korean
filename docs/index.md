@@ -437,7 +437,7 @@ import asyncio
 
 async def app(scope, receive, send):
     """
-    클라이언트에 느리게 스트리밍되는 HTTP 응답을 다시 보냅니다.
+    클라이언트에게 점진적으로 데이터를 스트리밍하는 HTTP 응답을 보냅니다.
     """
     await send({
         'type': 'http.response.start',
@@ -466,7 +466,7 @@ async def app(scope, receive, send):
 잘 정립된 대부분의 Python 웹 프레임워크는 WSGI 기반 프레임워크로 시작되었습니다.
 
 WSGI 애플리케이션은 요청을 받아 응답을 반환하는 단일 동기 호출 가능 객체입니다. 
-이것은 WSGI가 잘 지원하지 않는, 긴 지속성을 가진 연결(예를 들어, 롱 폴링 HTTP 또는 WebSocket 연결)을 
+이것은 WSGI가 잘 지원하지 않는, 긴 지속성을 가진 연결(예를 들어, 긴 폴링 HTTP 또는 WebSocket 연결)을 
 허용하지 않습니다.
 
 비동기 동시성 모델을 가짐으로써 가벼운 백그라운드 작업과 같은 옵션을 허용하며, 

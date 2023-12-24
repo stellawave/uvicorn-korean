@@ -1,147 +1,141 @@
-# Deployment
+# 배포
 
-Server deployment is a complex area, that will depend on what kind of service you're deploying Uvicorn onto.
+서버 배포는 복잡한 영역으로, 어떤 종류의 서비스에 Uvicorn을 배포할 것인지에 따라 달라집니다.
 
-As a general rule, you probably want to:
+일반적인 규칙으로, 당신은 아마도 다음을 원할 것입니다:
 
-* Run `uvicorn --reload` from the command line for local development.
-* Run `gunicorn -k uvicorn.workers.UvicornWorker` for production.
-* Additionally run behind Nginx for self-hosted deployments.
-* Finally, run everything behind a CDN for caching support, and serious DDOS protection.
+* 로컬 개발을 위해 명령줄에서 `uvicorn --reload`를 실행합니다.
+* 프로덕션을 위해 `gunicorn -k uvicorn.workers.UvicornWorker`를 실행합니다.
+* 또한 자체 호스팅을 위해 Nginx 뒤에서 실행합니다.
+* 마지막으로, 캐싱 지원과 DDOS 보호를 위해 모든 것을 CDN 뒤에서 실행합니다.
 
-## Running from the command line
+## 명령줄에서 실행
 
-Typically you'll run `uvicorn` from the command line.
+일반적으로는 명령줄에서 `uvicorn`을 실행합니다.
 
 ```bash
 $ uvicorn main:app --reload --port 5000
 ```
 
-The ASGI application should be specified in the form `path.to.module:instance.path`.
+ASGI 애플리케이션은 `path.to.module:instance.path` 형식으로 지정해야 합니다.
 
-When running locally, use `--reload` to turn on auto-reloading.
+로컬에서 실행하는 경우에는 `--reload`를 사용하여 자동 로딩을 킬 수 있습니다.
 
-The `--reload` and `--workers` arguments are **mutually exclusive**.
+`--reload` 및 `--workers` 매개변수는 **상호 배타적**입니다.
 
-To see the complete set of available options, use `uvicorn --help`:
+사용 가능한 전체 옵션 세트를 보려면 `uvicorn --help`를 사용하세요:
 
 <!-- :cli_usage: -->
 ```
 $ uvicorn --help
-Usage: uvicorn [OPTIONS] APP
+사용법: uvicorn [OPTIONS] APP
 
 Options:
-  --host TEXT                     Bind socket to this host.  [default:
+  --host TEXT                     소켓을 이 호스트에 바인딩합니다.  [기본 값:
                                   127.0.0.1]
-  --port INTEGER                  Bind socket to this port. If 0, an available
-                                  port will be picked.  [default: 8000]
-  --uds TEXT                      Bind to a UNIX domain socket.
-  --fd INTEGER                    Bind to socket from this file descriptor.
-  --reload                        Enable auto-reload.
-  --reload-dir PATH               Set reload directories explicitly, instead
-                                  of using the current working directory.
-  --reload-include TEXT           Set glob patterns to include while watching
-                                  for files. Includes '*.py' by default; these
-                                  defaults can be overridden with `--reload-
-                                  exclude`. This option has no effect unless
-                                  watchfiles is installed.
-  --reload-exclude TEXT           Set glob patterns to exclude while watching
-                                  for files. Includes '.*, .py[cod], .sw.*,
-                                  ~*' by default; these defaults can be
-                                  overridden with `--reload-include`. This
-                                  option has no effect unless watchfiles is
-                                  installed.
-  --reload-delay FLOAT            Delay between previous and next check if
-                                  application needs to be. Defaults to 0.25s.
-                                  [default: 0.25]
-  --workers INTEGER               Number of worker processes. Defaults to the
-                                  $WEB_CONCURRENCY environment variable if
-                                  available, or 1. Not valid with --reload.
-  --loop [auto|asyncio|uvloop]    Event loop implementation.  [default: auto]
-  --http [auto|h11|httptools]     HTTP protocol implementation.  [default:
+  --port INTEGER                  소켓을 이 포트에 바인딩합니다. 0이면 사용 가능한
+                                  포트가 선택됩니다.  [기본 값: 8000]
+  --uds TEXT                      UNIX 도메인 소켓에 바인딩합니다.
+  --fd INTEGER                    이 파일 디스크립터의 소켓에 바인딩합니다.
+  --reload                        자동 새로 고침을 활성화합니다.
+  --reload-dir PATH               현재 작업 디렉토리를 사용하는 대신 명시적으로 자동
+                                  새로 고침 디렉토리를 설정합니다.
+  --reload-include TEXT           파일을 감시할 때 포함할 glob 패턴을 설정합니다.
+                                  기본적으로 '*.py'를 포함합니다; 이 기본 값은
+                                  '--reload-exclude'로 재정의할 수 있습니다.
+                                  이 옵션은 watchfiles가 설치되지 않았다면 효과가
+                                  없습니다.
+  --reload-exclude TEXT           파일을 감시할 때 제외할 glob 패턴을 설정합니다.
+                                  기본적으로 '.*, .py[cod], .sw.*,~*'를 포함
+                                  합니다; 이 기본 값은 '--reload-include'로
+                                  재정의 할 수 있습니다. 이 옵션은 watchfiles가
+                                  설치되지 않았다면 효과가 없습니다.
+  --reload-delay FLOAT            이전 검사와 다음 검사 사이의 지연은 애플리케이션이
+                                  필요한 경우에 설정됩니다. 기본 값은 0.25초입니다.
+                                  [기본 값: 0.25]
+  --workers INTEGER               워커 프로세스의 수. 가능한 경우 $WEB_CONCURRENCY
+                                  환경 변수를 기본 값으로 사용하거나, 1을 사용합니다.
+                                  --reload와 함께 사용할 수 없습니다.
+  --loop [auto|asyncio|uvloop]    이벤트 루프 구현  [기본 값: auto]
+  --http [auto|h11|httptools]     HTTP 프로토콜 구현  [기본 값:
                                   auto]
   --ws [auto|none|websockets|wsproto]
-                                  WebSocket protocol implementation.
-                                  [default: auto]
-  --ws-max-size INTEGER           WebSocket max size message in bytes
-                                  [default: 16777216]
-  --ws-max-queue INTEGER          The maximum length of the WebSocket message
-                                  queue.  [default: 32]
-  --ws-ping-interval FLOAT        WebSocket ping interval in seconds.
-                                  [default: 20.0]
-  --ws-ping-timeout FLOAT         WebSocket ping timeout in seconds.
-                                  [default: 20.0]
+                                  웹소켓 프로토콜 구현
+                                  [기본 값: auto]
+  --ws-max-size INTEGER           웹소켓 최대 메시지 크기(바이트 단위)
+                                  [기본 값: 16777216]
+  --ws-max-queue INTEGER          웹소켓 메시지 큐의 최대 길이
+                                  [기본 값: 32]
+  --ws-ping-interval FLOAT        웹소켓 핑 간격  [기본 값: 20.0]
+  --ws-ping-timeout FLOAT         웹소켓 핑 타임아웃  [기본 값: 20.0]
   --ws-per-message-deflate BOOLEAN
-                                  WebSocket per-message-deflate compression
-                                  [default: True]
-  --lifespan [auto|on|off]        Lifespan implementation.  [default: auto]
+                                  웹소켓 단일 메시지 압축 설정
+                                  [기본 값: True]
+  --lifespan [auto|on|off]        수명 주기 구현  [기본 값: auto]
   --interface [auto|asgi3|asgi2|wsgi]
-                                  Select ASGI3, ASGI2, or WSGI as the
-                                  application interface.  [default: auto]
-  --env-file PATH                 Environment configuration file.
-  --log-config PATH               Logging configuration file. Supported
-                                  formats: .ini, .json, .yaml.
+                                  애플리케이션 인터페이스로 ASGI3, ASGI2, 또는
+                                  WSGI를 선택.  [기본 값: auto]
+  --env-file PATH                 환경 설정 파일을 지정.
+  --log-config PATH               로그 구성 파일을 지정. 지원되는 형식:
+                                  .ini, .json, .yaml.
   --log-level [critical|error|warning|info|debug|trace]
-                                  Log level. [default: info]
-  --access-log / --no-access-log  Enable/Disable access log.
-  --use-colors / --no-use-colors  Enable/Disable colorized logging.
+                                  로깅 레벨. [기본 값: info]
+  --access-log / --no-access-log  엑세스 로그를 활성화/비활성화
+  --use-colors / --no-use-colors  컬러 로그를 활성화/비활성화
   --proxy-headers / --no-proxy-headers
-                                  Enable/Disable X-Forwarded-Proto,
-                                  X-Forwarded-For, X-Forwarded-Port to
-                                  populate remote address info.
+                                  원격 주소 정보를 채우기 위해 X-Forwarded-Proto
+                                  X-Forwarded-For, X-Forwarded-Port를
+                                  활성화/비활성화합니다.
   --server-header / --no-server-header
-                                  Enable/Disable default Server header.
+                                  기본 server 헤더를 활성화/비활성화.
   --date-header / --no-date-header
-                                  Enable/Disable default Date header.
-  --forwarded-allow-ips TEXT      Comma separated list of IPs to trust with
-                                  proxy headers. Defaults to the
-                                  $FORWARDED_ALLOW_IPS environment variable if
-                                  available, or '127.0.0.1'.
-  --root-path TEXT                Set the ASGI 'root_path' for applications
-                                  submounted below a given URL path.
-  --limit-concurrency INTEGER     Maximum number of concurrent connections or
-                                  tasks to allow, before issuing HTTP 503
-                                  responses.
-  --backlog INTEGER               Maximum number of connections to hold in
-                                  backlog
-  --limit-max-requests INTEGER    Maximum number of requests to service before
-                                  terminating the process.
-  --timeout-keep-alive INTEGER    Close Keep-Alive connections if no new data
-                                  is received within this timeout.  [default:
+                                  기본 날짜 헤더를 활성화/비활성화.
+  --forwarded-allow-ips TEXT      프록시 헤더를 신뢰할 수 IP 목록을 쉼표로 구분하여
+                                  설정합니다. 가능한 경우 $FORWARDED_ALLOW_IPS
+                                  환경 변수를 기본값으로 사용하거나, '127.0.0.1'을
+                                  사용합니다.
+  --root-path TEXT                특정 URL 경로 아래에 마운트된 애플리케이션을 위해
+                                  ASGI 'root_path'를 설정합니다.
+  --limit-concurrency INTEGER     HTTP 503 응답을 발행하기 전에 허용하는 동시 연결
+                                  또는 작업의 최대 수를 설정합니다.
+  --backlog INTEGER               대기열에서 보유할 최대 연결 수
+  --limit-max-requests INTEGER    프로세스를 종료하기 전에 처리할 요청의 최대 수를
+                                  설정합니다.
+  --timeout-keep-alive INTEGER    이 제한 시간 내에 새 데이터가 수신되지 않으면 연결
+                                  유지를 종료  [기본 값:
                                   5]
   --timeout-graceful-shutdown INTEGER
-                                  Maximum number of seconds to wait for
-                                  graceful shutdown.
-  --ssl-keyfile TEXT              SSL key file
-  --ssl-certfile TEXT             SSL certificate file
-  --ssl-keyfile-password TEXT     SSL keyfile password
-  --ssl-version INTEGER           SSL version to use (see stdlib ssl module's)
-                                  [default: 17]
-  --ssl-cert-reqs INTEGER         Whether client certificate is required (see
-                                  stdlib ssl module's)  [default: 0]
-  --ssl-ca-certs TEXT             CA certificates file
-  --ssl-ciphers TEXT              Ciphers to use (see stdlib ssl module's)
-                                  [default: TLSv1]
-  --header TEXT                   Specify custom default HTTP response headers
-                                  as a Name:Value pair
-  --version                       Display the uvicorn version and exit.
-  --app-dir TEXT                  Look for APP in the specified directory, by
-                                  adding this to the PYTHONPATH. Defaults to
-                                  the current working directory.
+                                  자동 종료를 기다리는 최대 시간(초)
+  --ssl-keyfile TEXT              SSL 키 파일
+  --ssl-certfile TEXT             SSL 인증서 파일
+  --ssl-keyfile-password TEXT     SSL 키 파일 패스워드
+  --ssl-version INTEGER           사용할 SSL 버전 (stdlib ssl 모듈 참조)
+                                  [기본 값: 17]
+  --ssl-cert-reqs INTEGER         클라이언트 인증서 필요 여부 (stdlib
+                                  ssl 모듈 참조)  [기본 값: 0]
+  --ssl-ca-certs TEXT             CA 인증서 파일
+  --ssl-ciphers TEXT              사용할 암호화 (stdlib ssl 모듈 참조)
+                                  [기본 값: TLSv1]
+  --header TEXT                   Name:Value 쌍으로 사용자 지정 기본 HTTP 응답
+                                  헤더를 지정합니다.
+  --version                       uvicorn 버전을 표시하고 종료합니다.
+  --app-dir TEXT                  지정된 디렉토리에서 APP을 찾습니다. 이것을
+                                  PYTHONPATH에 추가합니다.
+                                  기본 값은 현재 작업 디렉토리입니다.
   --h11-max-incomplete-event-size INTEGER
-                                  For h11, the maximum number of bytes to
-                                  buffer of an incomplete event.
-  --factory                       Treat APP as an application factory, i.e. a
-                                  () -> <ASGI app> callable.
-  --help                          Show this message and exit.
+                                  h11의 경우, 완료되지 않은 이벤트의 버퍼에 대한
+                                  버퍼의 최대 바이트 수.
+  --factory                       APP을 애플리케이션 팩토리, 즉 
+                                  () -> <ASGI app> 호출 가능한 객체로 취급합니다.
+  --help                          이 메시지를 표시하고 종료합니다.
 ```
 
 
-See the [settings documentation](settings.md) for more details on the supported options for running uvicorn.
+uvicorn에서 지원되는 옵션에 대한 자세한 내용은 [설정 설명서](settings.md)를 참고하세요.
 
-## Running programmatically
+## 프로그래밍 방식으로 실행
 
-To run directly from within a Python program, you should use `uvicorn.run(app, **config)`. For example:
+Python 프로그램 내에서 직접 실행하려면 `uvicorn.run(app, **config)`을 사용해야 합니다. 예를 들어:
 
 ```py title="main.py"
 import uvicorn
@@ -155,46 +149,45 @@ if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=5000, log_level="info")
 ```
 
-The set of configuration options is the same as for the command line tool.
+구성 옵션 집합은 명령줄 도구와 동일합니다.
 
-Note that the application instance itself *can* be passed instead of the app
-import string.
+앱 가져오기 문자열 대신 애플리케이션 인스턴스 자체가 전달될 수 있다는 점을 유의하세요.
 
 ```python
 uvicorn.run(app, host="127.0.0.1", port=5000, log_level="info")
 ```
 
-However, this style only works if you are not using multiprocessing (`workers=NUM`)
-or reloading (`reload=True`), so we recommend using the import string style.
+그러나 이 스타일은 멀티프로세싱(`workers=NUM`) 또는 리로딩(`reload=True`)을 사용하지 않는 경우에만 작동하므로, 
+가져오기 문자열 스타일을 사용하는 것을 추천합니다.
 
-Also note that in this case, you should put `uvicorn.run` into `if __name__ == '__main__'` clause in the main module.
+또한 이 경우, 메인 모듈에서 `uvicorn.run`을 `if __name__ == '__main__'`절에 넣어야 한다는 점을 유의하세요.
 
 !!! note
-    The `reload` and `workers` parameters are **mutually exclusive**.
+    `reload`와 `workers` 매개변수는 **상호 배타적**입니다.
 
-## Using a process manager
+## 프로세스 관리자 사용법
 
-Running Uvicorn using a process manager ensures that you can run multiple processes in a resilient manner, and allows you to perform server upgrades without dropping requests.
+프로세스 관리자를 사용하여 Uvicorn을 실행하면 여러 프로세스를 견고하게 실행할 수 있으며, 요청을 놓치지 않고 서버 업그레이드를 수행할 수 있습니다.
 
-A process manager will handle the socket setup, start-up multiple server processes, monitor process aliveness, and listen for signals to provide for processes restarts, shutdowns, or dialing up and down the number of running processes.
+프로세스 관리자는 소켓 설정을 처리하고, 여러 서버 프로세스를 시작하며, 프로세스 생존을 모니터링하고, 프로세스 재시작, 종료 또는 실행 중인 프로세스 수를 조정하기 위한 신호를 감지합니다.
 
-Uvicorn provides a lightweight way to run multiple worker processes, for example `--workers 4`, but does not provide any process monitoring.
+Uvicorn은 예를 들어 `--workers 4`와 같이 여러 워커 프로세스를 가볍게 실행할 수 있는 방법을 제공하지만, 프로세스 모니터링은 제공하지 않습니다..
 
 ### Gunicorn
 
-Gunicorn is probably the simplest way to run and manage Uvicorn in a production setting. Uvicorn includes a gunicorn worker class that means you can get set up with very little configuration.
+Gunicorn은 프로덕션 환경에서 Uvicorn을 실행하고 관리하는 가장 간단한 방법일 것입니다. Uvicorn에는 Gunicorn worker 클래스가 포함되어 있어 설정이 거의 필요하지 않습니다.
 
-The following will start Gunicorn with four worker processes:
+다음은 네 개의 worker 프로세스로 Gunicorn을 시작합니다:
 
 `gunicorn -w 4 -k uvicorn.workers.UvicornWorker`
 
-The `UvicornWorker` implementation uses the `uvloop` and `httptools` implementations. To run under PyPy you'll want to use pure-python implementation instead. You can do this by using the `UvicornH11Worker` class.
+`UvicornWorker` 구현은 `uvloop` 및 `httptools` 구현을 사용합니다. PyPy에서 실행하려면 대신 순수 파이썬 구현을 사용하는 것이 좋습니다. `UvicornH11Worker` 클래스를 사용하면 됩니다.
 
 `gunicorn -w 4 -k uvicorn.workers.UvicornH11Worker`
 
-Gunicorn provides a different set of configuration options to Uvicorn, so  some options such as `--limit-concurrency` are not yet supported when running with Gunicorn.
+Gunicorn은 Uvicorn과 다른 구성 옵션 집합을 제공하므로 Gunicorn을 실행할 때 `--limit-concurrency`와 같은 일부 옵션은 아직 지원되지 않습니다.
 
-If you need to pass uvicorn's config arguments to gunicorn workers then you'll have to subclass `UvicornWorker`:
+Uvicorn의 구성 인자를 Gunicorn worker에 전달해야 하는 경우, `UvicornWorker`를 서브 클래싱해야 합니다:
 
 ```python
 from uvicorn.workers import UvicornWorker
@@ -205,12 +198,12 @@ class MyUvicornWorker(UvicornWorker):
 
 ### Supervisor
 
-To use `supervisor` as a process manager you should either:
+`supervisor`를 프로세스 관리자로 사용하려면 다음 중 하나를 선택해야 합니다:
 
-* Hand over the socket to uvicorn using its file descriptor, which supervisor always makes available as `0`, and which must be set in the `fcgi-program` section.
-* Or use a UNIX domain socket for each `uvicorn` process.
+* 소켓을 uvicorn에 파일 디스크립터를 사용하여 넘겨줍니다. Supervisor는 이것을 항상 0으 로 사용 가능하게 하며, 이것은 `fcgi-program` 섹션에서 설정해야 합니다.
+* 또는 각 `uvicorn` 프로세스에 대해 UNIX 도메인 소켓을 사용하세요.
 
-A simple supervisor configuration might look something like this:
+간단한 Supervisor 구성은 다음과 같습니다:
 
 ```ini title="supervisord.conf"
 [supervisord]
@@ -224,16 +217,16 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 ```
 
-Then run with `supervisord -n`.
+그런 다음 `supervisord -n`으로 실행합니다.
 
 ### Circus
 
-To use `circus` as a process manager, you should either:
+`circus`를 프로세스 관리자로 사용하기 위해서는 다음 중 하나를 수행해야 합니다:
 
-* Hand over the socket to uvicorn using its file descriptor, which circus makes available as `$(circus.sockets.web)`.
-* Or use a UNIX domain socket for each `uvicorn` process.
+* 소켓을 uvicorn에 파일 디스크립터를 사용하여 넘겨줍니다. circus는 이것을 `$(circus.sockets.web)`로 사용 가능하게 합니다.
+* 또는 각 uvicorn 프로세스에 대해 UNIX 도메인 소켓을 사용하세요.
 
-A simple circus configuration might look something like this:
+간단한 circus 구성은 다음과 같은 모습일 수 있습니다:
 
 ```ini title="circus.ini"
 [watcher:web]
@@ -246,24 +239,24 @@ host = 0.0.0.0
 port = 8000
 ```
 
-Then run `circusd circus.ini`.
+그런 다음 `circusd circus.ini`으로 실행합니다.
 
-## Running behind Nginx
+## Nginx 뒤에서 실행하기
 
-Using Nginx as a proxy in front of your Uvicorn processes may not be necessary, but is recommended for additional resilience. Nginx can deal with serving your static media and buffering slow requests, leaving your application servers free from load as much as possible.
+Nginx를 Uvicorn 프로세스 앞의 프록시로 사용하는 것은 필수는 아니지만 추가적인 복원력을 위해 권장됩니다. Nginx는 정적 미디어를 제공하고 느린 요청을 버퍼링하여 애플리케이션 서버의 부하를 최대한 줄일 수 있습니다.
 
-In managed environments such as `Heroku`, you won't typically need to configure Nginx, as your server processes will already be running behind load balancing proxies.
+`Heroku`와 같은 관리형 환경에서는 서버 프로세스가 이미 로드 밸런싱 프록시 뒤에서 실행되고 있기 때문에 일반적으로 Nginx를 구성할 필요는 없습니다.
 
-The recommended configuration for proxying from Nginx is to use a UNIX domain socket between Nginx and whatever the process manager that is being used to run Uvicorn.
-Note that when doing this you will need to run Uvicorn with `--forwarded-allow-ips='*'` to ensure that the domain socket is trusted as a source from which to proxy headers.
+Nginx에서 프록시하는 데 권장되는 구성은 Nginx와 Uvicorn 실행에 사용되는 프로세스 관리자 사이에 UNIX 도메인 소켓을 사용하는 것입니다. 
+이 경우 도메인 소켓이 헤더를 프록시할 소스로서 신뢰할 수 있도록 `--forwarded-allow-ips='*'`로 Uvicorn을 실행해야 한다는 점에 유의하세요.
 
-When fronting the application with a proxy server you want to make sure that the proxy sets headers to ensure that the application can properly determine the client address of the incoming connection, and if the connection was over `http` or `https`.
+프록시 서버로 애플리케이션을 전달할 때는 애플리케이션이 들어오는 연결의 클라이언트 주소를 올바르게 확인할 수 있도록 프록시가 헤더를 설정하는지, 연결이 `http` 또는 `https`를 통해 이루어졌는지 확인해야 합니다.
 
-You should ensure that the `X-Forwarded-For` and `X-Forwarded-Proto` headers are set by the proxy, and that Uvicorn is run using the `--proxy-headers` setting. This ensures that the ASGI scope includes correct `client` and `scheme` information.
+프록시에서 X-Forwarded-For 및 X-Forwarded-Proto 헤더가 설정되어 있는지, 그리고 `--proxy-headers` 설정을 사용하여 Uvicorn이 실행되는지 확인해야 합니다. 이렇게 하면 ASGI scope에 올바른 `client` 및 `scheme` 정보가 포함되도록 할 수 있습니다.
 
-Here's how a simple Nginx configuration might look. This example includes setting proxy headers, and using a UNIX domain socket to communicate with the application server.
+다음은 간단한 Nginx 구성의 모습입니다. 이 예제에는 프록시 헤더 설정과 UNIX 도메인 소켓을 사용하여 애플리케이션 서버와 통신하는 방법이 포함되어 있습니다.
 
-It also includes some basic configuration to forward websocket connections. For more info on this, check [Nginx recommendations][nginx_websocket].
+또한 웹소켓 연결을 전달하기 위한 몇 가지 기본 구성도 포함되어 있습니다. 이에 대한 자세한 내용은 [Nginx 권장 사항][nginx_websocket]을 참조하세요.
 
 ```conf
 http {
@@ -302,33 +295,33 @@ http {
 }
 ```
 
-Uvicorn's `--proxy-headers` behavior may not be sufficient for more complex proxy configurations that use different combinations of headers, or where the application is running behind more than one intermediary proxying service.
+다양한 헤더 조합을 사용하는 복잡한 프록시 구성이나 애플리케이션이 둘 이상의 프록시 서비스 뒤에서 실행되는 경우 Uvicorn의 `--proxy-headers` 동작이 충분하지 않을 수 있습니다.
 
-In those cases, you might want to use an ASGI middleware to set the `client` and `scheme` dependant on the request headers.
+이러한 경우 ASGI 미들웨어를 사용하여 요청 헤더에 따라 `client` 및 `scheme`를 설정할 수 있습니다.
 
-## Running behind a CDN
+## CDN 뒤에서 실행하기
 
-Running behind a content delivery network, such as Cloudflare or Cloud Front, provides a serious layer of protection against DDOS attacks. Your service will be running behind huge clusters of proxies and load balancers that are designed for handling huge amounts of traffic, and have capabilities for detecting and closing off connections from DDOS attacks.
+Cloudflare 또는 Cloud Front와 같은 콘텐츠 전송 네트워크(CDN) 뒤에서 운영하는 것은 DDoS 공격에 대한 강력한 보호층을 제공합니다. 서비스는 대규모의 트래픽을 처리하기 위해 설계된 거대한 프록시 및 로드 밸런서 클러스터 뒤에서 운영되며, DDoS 공격에서 오는 연결을 감지하고 차단하는 기능을 가지고 있습니다.
 
-Proper usage of cache control headers can mean that a CDN is able to serve large amounts of data without always having to forward the request on to your server.
+캐시 제어 헤더를 올바르게 사용하면 CDN이 항상 요청을 서버로 전달하지 않고도 대량의 데이터를 제공할 수 있습니다.
 
-Content Delivery Networks can also be a low-effort way to provide HTTPS termination.
+콘텐츠 전송 네트워크는 또한 HTTPS 종료를 제공하는 데 들이는 노력이 적은 방법일 수 있습니다.
 
-## Running with HTTPS
+## HTTPS와 함께 실행하기
 
-To run uvicorn with https, a certificate and a private key are required.
-The recommended way to get them is using [Let's Encrypt][letsencrypt].
+https로 uvicorn을 실행하려면 인증서와 개인 키가 필요합니다. 
+권장되는 인증서를 얻는 방법은[Let's Encrypt][letsencrypt]를 사용하는 것입니다.
 
-For local development with https, it's possible to use [mkcert][mkcert]
-to generate a valid certificate and private key.
+https를 사용하는 로컬 개발의 경우 [mkcert][mkcert]를 
+사용하여 유효한 인증서와 비공개 키를 생성할 수 있습니다. 
 
 ```bash
 $ uvicorn main:app --port 5000 --ssl-keyfile=./key.pem --ssl-certfile=./cert.pem
 ```
 
-### Running gunicorn worker
+### gunicorn worker로 실행하기
 
-It's also possible to use certificates with uvicorn's worker for gunicorn.
+Uvicorn worker와 함께 인증서를 Gunicorn에 사용할 수도 있습니다.
 
 ```bash
 $ gunicorn --keyfile=./key.pem --certfile=./cert.pem -k uvicorn.workers.UvicornWorker main:app
