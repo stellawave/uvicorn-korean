@@ -32,11 +32,11 @@
 * `--reload` - 자동 리로드 활성화. Uvicorn은 이 옵션으로 활성화되는 두 가지 버전의 자동 새로 고침 동작을 지원합니다. 이 두 가지 버전에는 중요한 차이점이 있습니다.
 * `--reload-dir <path>` - 파이썬 파일 변경을 감시하는 디렉터리를 지정합니다. 여러 번 사용할 수 있습니다. 사용하지 않으면 기본적으로 현재 디렉터리 전체가 감시됩니다. 프로그래밍 방식으로 실행하는 경우 `reload_dirs=[]`를 사용하고 문자열 리스트를 전달하세요.
 
-### watchfiles 없이 리로딩하기
+### watchfiles 없이 리로드하기
 
-Uvicorn이 런타임에 [watchfiles](https://pypi.org/project/watchfiles/)를 로드할 수 없는 경우, 모니터링하는 디렉터리 내의 모든 `*.py` 파일(`*.py` 파일만 해당)에 대한 수정 시간 변경을 주기적으로 찾을 겁니다. `reload-dir` 옵션을 참조하세요. watchfiles가 설치되어 있지 않으면 다른 파일 확장자는 지원되지 않습니다. 자세한 내용은 `--reload-include` 및 `--reload-exclude` 옵션을 참조하세요.
+Uvicorn이 런타임에 [watchfiles](https://pypi.org/project/watchfiles/)를 불러올 수 없는 경우, 모니터링하는 디렉터리 내의 모든 `*.py` 파일(`*.py` 파일만 해당)에 대한 수정 시간 변경을 주기적으로 찾을 겁니다. `reload-dir` 옵션을 참조하세요. watchfiles가 설치되어 있지 않으면 다른 파일 확장자는 지원되지 않습니다. 자세한 내용은 `--reload-include` 및 `--reload-exclude` 옵션을 참조하세요.
 
-### watchfiles을 사용하여 리로딩하기
+### watchfiles을 사용하여 리로드하기
 
 파일 변경이 리로드를 트리거하는 것을 더 세밀하게 제어하려면, 종속 요소로 watchfiles을 포함하는 `uvicorn[standard]`를 설치하세요. 또는 Uvicorn이 감지할 수 있는 곳에 [watchfiles](https://pypi.org/project/watchfiles/)를 설치하세요.
 

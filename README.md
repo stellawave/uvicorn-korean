@@ -42,13 +42,13 @@ uvicorn Version 0.25.0을 기반으로 번역되었으며 학습 목적으로 �
 $ pip install uvicorn
 ```
 
-아래와 같이 하면 최소한의(순수 파이썬) 종속성으로 uvicorn이 설치됩니다.
+위와 같이 하면 최소한의(순수 파이썬) 종속성으로 uvicorn이 설치됩니다.
 
 ```shell
 $ pip install 'uvicorn[standard]'
 ```
 
-이것은 가능한 경우 'Cython 기반' 의존성과 다른 '선택적 추가 기능'이 포함된 uvicorn을 설치합니다.
+위와 같이 하면 가능한 경우 'Cython 기반' 의존성과 다른 '선택적 추가 기능'이 포함된 uvicorn을 설치합니다.
 
 이 문맥에서, 'Cython 기반'은 다음을 의미합니다:
 
