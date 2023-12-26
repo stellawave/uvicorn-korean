@@ -134,7 +134,7 @@ $ hypercorn app:App
 
 ### Mangum
 
-[Mangum][mangum]은 AWS Lambda 및 API 게이트웨이에서 ASGI 애플리케이션을 사용하기 위한 어댑터입니다.
+[Mangum][mangum]은 AWS Lambda 및 API Gateway에서 ASGI 애플리케이션을 사용하기 위한 어댑터입니다.
 
 ---
 
