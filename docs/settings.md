@@ -58,64 +58,62 @@ watchfiles와 함께 Uvicorn을 사용하면 다음 옵션들이 활성화됩니
 * `--log-config <path>` - 로깅 구성 파일입니다. **옵션:** *`dictConfig()` 형식: .json, .yaml*. 다른 형식은 `fileConfig()`를 사용하여 처리됩니다. 자동 감지된 동작을 덮어쓰려면 `formatters.default.use_colors` 및 `formatters.access.use_colors` 값을 설정하세요.
     * 로깅 구성에 YAML 파일을 사용하려면 프로젝트에 PyYAML을 종속성으로 포함하거나 `[standard]` 선택적 추가 기능을 사용하여 uvicorn을 설치해야 합니다.
 * `--log-level <str>` - 로그 레벨을 설정합니다. **옵션:** *'critical', 'error', 'warning', 'info', 'debug', 'trace'.* **기본값:** *'info'*.
-* `--no-access-log` - 로그 레벨을 변경하지 않고 액세스 로그를 비활성화합니다.
+* `--no-access-log` - 로그 레벨을 변경하지 않고, 액세스 로그를 비활성화합니다.
 * `--use-colors / --no-use-colors` - 로그 기록의 색상 형식을 활성화/비활성화합니다. 이 옵션이 설정되지 않으면 자동 감지됩니다. 이 옵션은 `--log-config` CLI 옵션을 사용하는 경우 무시됩니다.
 
-## Implementation
+## 구현
 
-* `--loop <str>` - Set the event loop implementation. The uvloop implementation provides greater performance, but is not compatible with Windows or PyPy. **Options:** *'auto', 'asyncio', 'uvloop'.* **Default:** *'auto'*.
-* `--http <str>` - Set the HTTP protocol implementation. The httptools implementation provides greater performance, but it not compatible with PyPy. **Options:** *'auto', 'h11', 'httptools'.* **Default:** *'auto'*.
-* `--ws <str>` - Set the WebSockets protocol implementation. Either of the `websockets` and `wsproto` packages are supported. Use `'none'` to ignore all websocket requests. **Options:** *'auto', 'none', 'websockets', 'wsproto'.* **Default:** *'auto'*.
-* `--ws-max-size <int>` - Set the WebSockets max message size, in bytes. Please note that this can be used only with the default `websockets` protocol.
-* `--ws-max-queue <int>` - Set the maximum length of the WebSocket incoming message queue. Please note that this can be used only with the default `websockets` protocol.
-* `--ws-ping-interval <float>` - Set the WebSockets ping interval, in seconds. Please note that this can be used only with the default `websockets` protocol. **Default:** *20.0*
-* `--ws-ping-timeout <float>` - Set the WebSockets ping timeout, in seconds. Please note that this can be used only with the default `websockets` protocol. **Default:** *20.0*
-* `--lifespan <str>` - Set the Lifespan protocol implementation. **Options:** *'auto', 'on', 'off'.* **Default:** *'auto'*.
-* `--h11-max-incomplete-event-size <int>` - Set the maximum number of bytes to buffer of an incomplete event. Only available for `h11` HTTP protocol implementation. **Default:** *'16384'* (16 KB).
+* `--loop <str>` - 이벤트 루프 구현을 설정합니다. uvloop 구현은 더 높은 성능을 제공하지만, Windows나 PyPy와 호환되지 않습니다. **옵션:** *'auto', 'asyncio', 'uvloop'.* **기본값:** *'auto'*.
+* `--http <str>` - HTTP 프로토콜 구현을 설정합니다. httptools 구현은 더 높은 성능을 제공하지만, PyPy와 호환되지 않습니다. **옵션:** *'auto', 'h11', 'httptools'.* **기본값:** *'auto'*.
+* `--ws <str>` - 웹소켓 프로토콜 구현을 설정합니다. `websockets` 및 `wsproto` 패키지 모두 지원됩니다. 모든 웹소켓 요청을 무시하려면 `'none'`을 사용하세요. **옵션:** *'auto', 'none', 'websockets', 'wsproto'.* **기본값:** *'auto'*.
+* `--ws-max-size <int>` - 웹소켓의 최대 메시지 크기를 바이트 단위로 설정합니다. 이 옵션은 기본 `websockets` 프로토콜에서만 사용할 수 있습니다.
+* `--ws-max-queue <int>` - 웹소켓 들어오는 메시지 큐의 최대 길이를 설정합니다. 이 옵션은 기본 `websockets` 프로토콜에서만 사용할 수 있습니다.
+* `--ws-ping-interval <float>` - 웹소켓의 핑 간격을 초 단위로 설정합니다. 이 옵션은 기본 `websockets` 프로토콜에서만 사용할 수 있습니다. **기본값:** *20.0*
+* `--ws-ping-timeout <float>` - 웹소켓의 핑 타임아웃을 초 단위로 설정합니다. 이 옵션은 기본 `websockets` 프로토콜에서만 사용할 수 있습니다. **기본값:** *20.0*
+* `--lifespan <str>` - Lifespan 프로토콜 구현을 설정합니다. **옵션:** *'auto', 'on', 'off'.* **기본값:** *'auto'*.
+* `--h11-max-incomplete-event-size <int>` - 완료되지 않은 이벤트의 버퍼에 저장할 최대 바이트 수를 설정합니다.  이 옵션은 `h11` HTTP 프로토콜 구현에만 사용 가능합니다. **기본값:** *'16384'* (16 KB).
 
-## Application Interface
+## 애플리케이션 인터페이스
 
-* `--interface` - Select ASGI3, ASGI2, or WSGI as the application interface.
-Note that WSGI mode always disables WebSocket support, as it is not supported by the WSGI interface.
-**Options:** *'auto', 'asgi3', 'asgi2', 'wsgi'.* **Default:** *'auto'*.
+* `--interface` - 애플리케이션 인터페이스로 ASGI3, ASGI2, 또는 WSGI를 선택합니다.
+WSGI 모드는 WSGI 인터페이스에서 지원되지 않기 때문에 항상 웹소켓 지원을 비활성화합니다.
+**옵션:** *'auto', 'asgi3', 'asgi2', 'wsgi'.* **기본값:** *'auto'*.
 
-!!! warning
-    Uvicorn's native WSGI implementation is deprecated, you should switch
-    to [a2wsgi](https://github.com/abersheeran/a2wsgi) (`pip install a2wsgi`).
+!!! 경고
+    Uvicorn의 네이티브 WSGI 구현은 더 이상 사용되지 않으므로, [a2wsgi](https://github.com/abersheeran/a2wsgi)로 전환해야 합니다 (`pip install a2wsgi`).
 
 ## HTTP
 
-* `--root-path <str>` - Set the ASGI `root_path` for applications submounted below a given URL path.
-* `--proxy-headers` / `--no-proxy-headers` - Enable/Disable X-Forwarded-Proto, X-Forwarded-For, X-Forwarded-Port to populate remote address info. Defaults to enabled, but is restricted to only trusting
-connecting IPs in the `forwarded-allow-ips` configuration.
-* `--forwarded-allow-ips` <comma-separated-list> Comma separated list of IPs to trust with proxy headers. Defaults to the `$FORWARDED_ALLOW_IPS` environment variable if available, or '127.0.0.1'. A wildcard '*' means always trust.
-* `--server-header` / `--no-server-header` - Enable/Disable default `Server` header.
-* `--date-header` / `--no-date-header` - Enable/Disable default `Date` header.
+* `--root-path <str>` - 특정 URL 경로 아래에 서브마운트된 애플리케이션을 위한 ASGI `root_path`를 설정합니다.
+* `--proxy-headers` / `--no-proxy-headers` - X-Forwarded-Proto, X-Forwarded-For, X-Forwarded-Port를 활성화/비활성화하여 원격 주소 정보를 채웁니다. 기본적으로 활성화되어 있지만, `forwarded-allow-ips` 설정에 있는 연결 IP만 신뢰합니다.
+* `--forwarded-allow-ips` <comma-separated-list> 프록시 헤더로 신뢰할 수 있는 IP 목록을 쉼표로 구분하여 설정합니다. 기본값은 `$FORWARDED_ALLOW_IPS` 환경 변수(사용 가능한 경우) 또는 '127.0.0.1'입니다. 와일드카드 '*'는 항상 신뢰함을 의미합니다.
+* `--server-header` / `--no-server-header` - 기본 `Server` 헤더를 활성화/비활성화합니다.
+* `--date-header` / `--no-date-header` - 기본 `Date` 헤더를 활성화/비활성화합니다.
 
-!!! note
-    The `--no-date-header` flag doesn't have effect on the `websockets` implementation.
+!!! 주의
+    `--no-date-header` 플래그는 `websockets` 구현에 영향을 주지 않습니다.
 
 ## HTTPS
 
-The [SSL context](https://docs.python.org/3/library/ssl.html#ssl.SSLContext) can be configured with the following options:
+다음 옵션으로 [SSL 컨텍스트](https://docs.python.org/3/library/ssl.html#ssl.SSLContext)를 구성할 수 있습니다:
 
-* `--ssl-keyfile <path>` - The SSL key file.
-* `--ssl-keyfile-password <str>` - The password to decrypt the ssl key.
-* `--ssl-certfile <path>` - The SSL certificate file.
-* `--ssl-version <int>` - The SSL version to use.
-* `--ssl-cert-reqs <int>` - Whether client certificate is required.
-* `--ssl-ca-certs <str>` - The CA certificates file.
-* `--ssl-ciphers <str>` - The ciphers to use.
+* `--ssl-keyfile <path>` - SSL 키 파일입니다.
+* `--ssl-keyfile-password <str>` - SSL 키를 해독하는 데 필요한 비밀번호입니다.
+* `--ssl-certfile <path>` - SSL 인증서 파일입니다.
+* `--ssl-version <int>` - 사용할 SSL 버전입니다.
+* `--ssl-cert-reqs <int>` - 클라이언트 인증서가 필요한지 여부입니다.
+* `--ssl-ca-certs <str>` - CA 인증서 파일입니다.
+* `--ssl-ciphers <str>` - 사용할 암호 알고리즘입니다.
 
-To understand more about the SSL context options, please refer to the [Python documentation](https://docs.python.org/3/library/ssl.html).
+SSL 컨텍스트 옵션에 대해 더 자세히 알고 싶다면 [Python 문서](https://docs.python.org/3/library/ssl.html)를 참조하세요.
 
-## Resource Limits
+## 리소스 제한
 
-* `--limit-concurrency <int>` - Maximum number of concurrent connections or tasks to allow, before issuing HTTP 503 responses. Useful for ensuring known memory usage patterns even under over-resourced loads.
-* `--limit-max-requests <int>` - Maximum number of requests to service before terminating the process. Useful when running together with a process manager, for preventing memory leaks from impacting long-running processes.
-* `--backlog <int>` - Maximum number of connections to hold in backlog. Relevant for heavy incoming traffic. **Default:** *2048*
+* `--limit-concurrency <int>` - HTTP 503 응답을 발행하기 전에 허용하는 동시 연결 또는 작업의 최대 수입니다. 리소스 과부하 상태에서도 알려진 메모리 사용 패턴을 보장하는 데 유용합니다.
+* `--limit-max-requests <int>` - 프로세스를 종료하기 전에 서비스할 요청의 최대 수입니다. 프로세스 관리자와 함께 실행할 때, 장기간 실행되는 프로세스에 영향을 미치는 메모리 누수를 방지하는 데 유용합니다.
+* `--backlog <int>` - 대기열에서 보유할 최대 연결 수입니다. 많은 들어오는 트래픽에 관련됩니다. **기본값:** *2048*
 
-## Timeouts
+## 타임아웃
 
-* `--timeout-keep-alive <int>` - Close Keep-Alive connections if no new data is received within this timeout. **Default:** *5*.
-* `--timeout-graceful-shutdown <int>` - Maximum number of seconds to wait for graceful shutdown. After this timeout, the server will start terminating requests.
+* `--timeout-keep-alive <int>` - 이 타임아웃 내에 새 데이터가 수신되지 않으면 Keep-Alive 연결을 닫습니다. **기본값:** *5*.
+* `--timeout-graceful-shutdown <int>` - 원활한 종료를 위해 기다리는 최대 초 수입니다. 이 타임아웃 후에 서버는 요청을 종료하기 시작합니다.
