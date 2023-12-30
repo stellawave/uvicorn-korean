@@ -1,6 +1,6 @@
 # 설정
 
-명령줄에서 Uvicorn을 실행할 때 다음 옵션들을 사용하여 Uvicorn을 구성하세요.
+명령줄에서 Uvicorn을 실행할 때 다음 옵션들을 사용하여 Uvicorn을 구성할 수 있습니다.
 
 프로그래밍 방식으로 `uvicorn.run(...)`을 사용하여 실행하는 경우, 동등한 키워드 인자를 사용하세요. 
 예를 들어, `uvicorn.run("example:app", port=5000, reload=True, access_log=False)`와 같이 사용합니다.
@@ -22,7 +22,7 @@
 
 ## 소켓 바인딩
 
-* `--host <str>` - 소켓을 해당 호스트에 바인딩합니다. 로컬 네트워크에서 애플리케이션을 사용할 수 있게 하려면`--host 0.0.0.0`을 사용합니다. IPv6 주소가 지원합니다. 예를 들어: `--host '::'`. **기본값:** *'127.0.0.1'*.
+* `--host <str>` - 소켓을 해당 호스트에 바인딩합니다. 로컬 네트워크에서 애플리케이션을 사용할 수 있게 하려면`--host 0.0.0.0`을 사용합니다. IPv6 주소를 지원합니다. 예를 들어: `--host '::'`. **기본값:** *'127.0.0.1'*.
 * `--port <int>` - 소켓을 해당 포트에 바인딩합니다. **기본값:** *8000*.
 * `--uds <path>` - UNIX 도메인 소켓에 바인딩합니다(예: `--uds /tmp/uvicorn.sock`). 역방향 프록시 뒤에서 Uvicorn을 실행하려는 경우에 유용합니다. 
 * `--fd <int>` - 해당 파일 디스크립터에 소켓을 바인딩합니다. 프로세스 관리자 내에서 Uvicorn을 실행하려는 경우 유용합니다.
@@ -46,7 +46,7 @@ watchfiles와 함께 Uvicorn을 사용하면 다음 옵션들이 활성화됩니
 * `--reload-exclude <glob-pattern>` - 변경 사항 감시에서 제외될 파일이나 디렉토리에 매치되는 glob 패턴을 지정하세요. 여러 번 사용할 수 있습니다. 기본적으로 다음 패턴들이 제외됩니다: `.*, .py[cod], .sw.*, ~*`. 이 기본값들은 `--reload-include`에 포함시켜 덮어쓸 수 있습니다.
 
 !!! tip
-    [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)을 통해 Uvicorn을 사용할 때, 파일 변경이 리로드를 트리거하도록 하려면 `WATCHFILES_FORCE_POLLING` 환경 변수를 설정해야 할 수도 있습니다.
+    [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)을 통해 Uvicorn을 사용할 때, 파일 변경 시 리로드를 트리거하도록 하려면 `WATCHFILES_FORCE_POLLING` 환경 변수를 설정해야 할 수도 있습니다.
 자세한 내용은 [watchfiles 문서](https://watchfiles.helpmanual.io/api/watch/)를 참조하세요.
 
 ## 프로덕션
@@ -116,4 +116,4 @@ SSL 컨텍스트 옵션에 대해 더 자세히 알고 싶다면 [Python 문서]
 ## 타임아웃
 
 * `--timeout-keep-alive <int>` - 이 타임아웃 내에 새 데이터가 수신되지 않으면 Keep-Alive 연결을 닫습니다. **기본값:** *5*.
-* `--timeout-graceful-shutdown <int>` - 원활한 종료를 위해 기다리는 최대 초 수입니다. 이 타임아웃 후에 서버는 요청을 종료하기 시작합니다.
+* `--timeout-graceful-shutdown <int>` - 정상적으로 종료될 때까지 기다리는 최대 초 수입니다. 이 시간 초과 후에 서버는 요청을 종료하기 시작합니다.

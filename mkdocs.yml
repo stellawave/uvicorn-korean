@@ -25,11 +25,11 @@ repo_url: https://github.com/encode/uvicorn
 edit_uri: ""
 
 nav:
-  - Introduction: "index.md"
-  - Settings: "settings.md"
-  - Deployment: "deployment.md"
-  - Server Behavior: "server-behavior.md"
-  - Contributing: "contributing.md"
+  - 소개: "index.md"
+  - 설정: "settings.md"
+  - 배포: "deployment.md"
+  - 서버 작동 방식: "server-behavior.md"
+  - 기여하기: "contributing.md"
 
 markdown_extensions:
   - admonition
