@@ -1,32 +1,32 @@
-# Server Behavior
+# 서버 동작 방식
 
-Uvicorn is designed with particular attention to connection and resource management, in order to provide a robust server implementation. It aims to ensure graceful behavior to either server or client errors, and resilience to poor client behavior or denial of service attacks.
+Uvicorn은 강력한 서버 구현을 제공하기 위해 연결 및 리소스 관리에 특히 주의를 기울여 설계되었습니다. 서버 또는 클라이언트 오류가 발생해도 정상적으로 작동하고, 클라이언트 동작 불량 또는 서비스 거부 공격에 대한 복원력을 보장하는 것을 목표로 합니다.
 
-## HTTP Headers
+## HTTP 헤더
 
-The `Server` and `Date` headers are added to all outgoing requests.
+`Server` 및 `Date` 헤더가 모든 발신 요청에 추가됩니다.
 
-If a `Connection: Close` header is included then Uvicorn will close the connection after the response. Otherwise connections will stay open, pending the keep-alive timeout.
+만약 `Connection: Close` 헤더가 포함된 경우, Uvicorn은 응답 후 연결을 닫습니다. 그렇지 않으면 연결이 열려 있는 상태로 유지되며 연결 유지 시간 초과를 기다립니다.
 
-If a `Content-Length` header is included then Uvicorn will ensure that the content length of the response body matches the value in the header, and raise an error otherwise.
+`Content-Length` 헤더가 포함된 경우, Uvicorn은 응답 본문의 콘텐츠 길이가 헤더의 값과 일치하는지 확인하고 그렇지 않은 경우 오류를 발생시킵니다.
 
-If no `Content-Length` header is included then Uvicorn will use chunked encoding for the response body, and will set a `Transfer-Encoding` header if required.
+`Content-Length` 헤더가 포함되지 않은 경우, Uvicorn은 응답 본문에 청크 인코딩을 사용하며, 필요한 경우 `Transfer-Encoding` 헤더를 설정합니다.
 
-If a `Transfer-Encoding` header is included then any `Content-Length` header will be ignored.
+`Transfer-Encoding` 헤더가 포함된 경우, `Content-Length` 헤더는 무시됩니다.
 
-HTTP headers are mandated to be case-insensitive. Uvicorn will always send response headers strictly in lowercase.
+HTTP 헤더는 대소문자를 구분하지 않아야 합니다. Uvicorn은 항상 소문자로만 응답 헤더를 전송합니다.
 
 ---
 
-## Flow Control
+## 흐름 제어
 
 Proper flow control ensures that large amounts of data do not become buffered on the transport when either side of a connection is sending data faster than its counterpart is able to handle.
 
-### Write flow control
+### 쓰기 흐름 제어
 
 If the write buffer passes a high water mark, then Uvicorn ensures the ASGI `send` messages will only return once the write buffer has been drained below the low water mark.
 
-### Read flow control
+### 읽기 흐름 제어
 
 Uvicorn will pause reading from a transport once the buffered request body hits a high water mark, and will only resume once `receive` has been called, or once the response has been sent.
 
