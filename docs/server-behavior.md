@@ -20,90 +20,91 @@ HTTP 헤더는 대소문자를 구분하지 않아야 합니다. Uvicorn은 항�
 
 ## 흐름 제어
 
-Proper flow control ensures that large amounts of data do not become buffered on the transport when either side of a connection is sending data faster than its counterpart is able to handle.
+적절한 흐름 제어는 연결의 한 쪽이 상대방이 처리할 수 있는 것보다 빠르게 데이터를 전송할 때, 대량의 데이터가 전송 중에 버퍼링되지 않도록 보장합니다.
+
 
 ### 쓰기 흐름 제어
 
-If the write buffer passes a high water mark, then Uvicorn ensures the ASGI `send` messages will only return once the write buffer has been drained below the low water mark.
+쓰기 버퍼가 높은 수위를 넘어서면, Uvicorn은 ASGI `send` 메시지가 쓰기 버퍼가 낮은 수위 아래로 배출될 때까지만 반환되도록 보장합니다.
 
 ### 읽기 흐름 제어
 
-Uvicorn will pause reading from a transport once the buffered request body hits a high water mark, and will only resume once `receive` has been called, or once the response has been sent.
+버퍼된 요청 본문이 높은 수위에 도달하면 Uvicorn은 트랜스포트에서의 읽기를 일시 중지하고, `receive`가 호출되거나 응답이 전송된 후에만 다시 시작합니다.
 
 ---
 
-## Request and Response bodies
+## 요청 및 응답 본문
 
-### Response completion
+### 응답 완료
 
-Once a response has been sent, Uvicorn will no longer buffer any remaining request body. Any later calls to `receive` will return an `http.disconnect` message.
+응답이 전송되면, Uvicorn은 더 이상 남아 있는 요청 본문을 버퍼링하지 않습니다. 나중에 `receive`를 호출하면 `http.disconnect` 메시지가 반환됩니다.
 
-Together with the read flow control, this behavior ensures that responses that return without reading the request body will not stream any substantial amounts of data into memory.
+읽기 흐름 제어와 함께 이 동작은 요청 본문을 읽지 않고 반환하는 응답이 상당한 양의 데이터를 메모리로 스트리밍하지 않도록 보장합니다.
 
 ### Expect: 100-Continue
 
-The `Expect: 100-Continue` header may be sent by clients to require a confirmation from the server before uploading the request body. This can be used to ensure that large request bodies are only sent once the client has confirmation that the server is willing to accept the request.
+클라이언트는 `Expect: 100-Continue` 헤더를 보내 요청 본문을 업로드하기 전에 서버의 확인을 요구할 수 있습니다. 이는 클라이언트가 서버가 요청을 받아들일 준비가 되었다는 확인을 받은 후에만 대용량 요청 본문이 전송되도록 하는 데 사용할 수 있습니다.
 
-Uvicorn ensures that any required `100 Continue` confirmations are only sent if the ASGI application calls `receive` to read the request body.
+Uvicorn은 ASGI 애플리케이션이 요청 본문을 읽기 위해 `receive`를 호출하는 경우에만 필요한 `100 Continue` 확인을 보내도록 보장합니다.
 
-Note that proxy configurations may not necessarily forward on `Expect: 100-Continue` headers. In particular, Nginx defaults to buffering request bodies, and automatically sends `100 Continues` rather than passing the header on to the upstream server.
+프록시 구성은 `Expect: 100-Continue` 헤더를 전달하지 않을 수도 있습니다. 특히, Nginx는 기본적으로 요청 본문을 버퍼링하고, 헤더를 상위 서버로 전달하는 대신 자동으로 `100 Continue`를 보냅니다.
 
-### HEAD requests
+### HEAD 요청
 
-Uvicorn will strip any response body from HTTP requests with the `HEAD` method.
+Uvicorn은 `HEAD` 메소드를 가진 HTTP 요청의 모든 응답 본문을 제거합니다.
 
-Applications should generally treat `HEAD` requests in the same manner as `GET` requests, in order to ensure that identical headers are sent in both cases, and that any ASGI middleware that modifies the headers will operate identically in either case.
+애플리케이션은 일반적으로 `HEAD` 요청을 `GET` 요청과 동일하게 처리해야 합니다. 그렇게 해야 두 경우 모두 동일한 헤더가 전송되고, ASGI 미들웨어가 헤더를 수정할 때 두 경우 모두에서 동일하게 작동하도록 보장됩니다.
 
-One exception to this might be if your application serves large file downloads, in which case you might wish to only generate the response headers.
-
----
-
-## Timeouts
-
-Uvicorn provides the following timeouts:
-
-* Keep-Alive. Defaults to 5 seconds. Between requests, connections must receive new data within this period or be disconnected.
+예외적으로 애플리케이션이 대용량 파일 다운로드를 제공하는 경우 응답 헤더만 생성할 수 있습니다.
 
 ---
 
-## Resource Limits
+## 타임아웃
 
-Uvicorn provides the following resource limiting:
+Uvicorn은 다음과 같은 타임아웃을 제공합니다:
 
-* Concurrency. Defaults to `None`. If set, this provides a maximum number of concurrent tasks *or* open connections that should be allowed. Any new requests or connections that occur once this limit has been reached will result in a "503 Service Unavailable" response. Setting this value to a limit that you know your servers are able to support will help ensure reliable resource usage, even against significantly over-resourced servers.
-* Max requests. Defaults to `None`. If set, this provides a maximum number of HTTP requests that will be serviced before terminating a process. Together with a process manager this can be used to prevent memory leaks from impacting long running processes.
-
----
-
-## Server Errors
-
-Server errors will be logged at the `error` log level. All logging defaults to being written to `stdout`.
-
-### Exceptions
-
-If an exception is raised by an ASGI application, and a response has not yet been sent on the connection, then a `500 Server Error` HTTP response will be sent.
-
-### Invalid responses
-
-Uvicorn will ensure that ASGI applications send the correct sequence of messages, and will raise errors otherwise. This includes checking for no response sent, partial response sent, or invalid message sequences being sent.
+* Keep-Alive. 기본값은 5초입니다. 요청 사이에 연결은 이 기간 내에 새 데이터를 받아야 하며, 그렇지 않으면 연결이 끊어집니다.
 
 ---
 
-## Graceful Process Shutdown
+## 리소스 제한
 
-Graceful process shutdowns are particularly important during a restart period. During this period you want to:
+Uvicorn은 다음과 같은 리소스 제한을 제공합니다:
 
-* Start a number of new server processes to handle incoming requests, listening on the existing socket.
-* Stop the previous server processes from listening on the existing socket.
-* Close any connections that are not currently waiting on an HTTP response, and wait for any other connections to finalize their HTTP responses.
-* Wait for any background tasks to run to completion, such as occurs when the ASGI application has sent the HTTP response, but the asyncio task has not yet run to completion.
-
-Uvicorn handles process shutdown gracefully, ensuring that connections are properly finalized, and all tasks have run to completion. During a shutdown period Uvicorn will ensure that responses and tasks must still complete within the configured timeout periods.
+* Concurrency (동시성). 기본값은 `None`입니다. 값이 설정된 경우, 허용되어야 할 최대 동시 작업 *또는* 열린 연결의 수를 제공합니다. 이 한계에 도달한 후 발생하는 새로운 요청이나 연결은 "503 서비스 이용 불가" 응답을 초래할 것입니다. 서버가 지원할 수 있는 한계치로 이 값을 설정하면 상당히 과부하된 서버에 대해서도 신뢰할 수 있는 자원 사용을 보장하는 데 도움이 됩니다.
+* Max requests (최대 요청 수). 기본값은 `None`입니다. 값이 설정된 경우, 프로세스가 종료되기 전에 서비스될 최대 HTTP 요청 수를 제공합니다. 프로세스 관리자와 함께 사용하면 장기 실행 프로세스에 영향을 미치는 메모리 누수를 방지하는 데 사용할 수 있습니다.
 
 ---
 
-## HTTP Pipelining
+## 서버 오류
 
-HTTP/1.1 provides support for sending multiple requests on a single connection, before having received each corresponding response. Servers are required to support HTTP pipelining, but it is now generally accepted to lead to implementation issues. It is not enabled on browsers, and may not necessarily be enabled on any proxies that the HTTP request passes through.
+서버 오류는 'error' 로그 레벨에서 기록됩니다. 모든 로깅은 기본적으로 'stdout'에 기록됩니다.
 
-Uvicorn supports pipelining pragmatically. It will queue up any pipelined HTTP requests, and pause reading from the underlying transport. It will not start processing pipelined requests until each response has been dealt with in turn.
+### 예외
+
+ASGI 애플리케이션에서 예외가 발생하고 연결에 대한 응답이 아직 전송되지 않은 경우, `500 서버 오류` HTTP 응답이 전송됩니다.
+
+### 잘못된 응답
+
+Uvicorn은 ASGI 애플리케이션이 올바른 메시지 순서를 보내도록 보장하고, 그렇지 않을 경우 오류를 발생시킬 것입니다. 여기에는 응답이 전송되지 않았거나, 부분적인 응답이 전송되었거나, 잘못된 메시지 순서가 전송된 경우가 포함됩니다.
+
+---
+
+## 우아한 프로세스 종료
+
+재시작 기간 동안 우아한 프로세스 종료는 특히 중요합니다. 이 기간 동안 당신은:
+
+* 기존 소켓에서 들어오는 요청을 처리하기 위해 새로운 서버 프로세스를 시작합니다.
+* 기존 소켓에서 이전 서버 프로세스의 수신을 중지합니다.
+* 현재 HTTP 응답을 기다리고 있지 않은 모든 연결을 닫고, 다른 연결이 HTTP 응답을 완료할 때까지 기다립니다.
+* ASGI 애플리케이션이 HTTP 응답을 보냈지만 asyncio 작업이 아직 완료되지 않은 경우와 같이 백그라운드 작업이 완료될 때까지 기다립니다.
+
+Uvicorn은 프로세스 종료를 우아하게 처리하여, 연결이 적절히 완료되고 모든 작업이 완료될 수 있도록 보장합니다. 종료 기간 동안 Uvicorn은 응답과 작업이 설정된 타임아웃 기간 내에 여전히 완료되어야 함을 보장합니다.
+
+---
+
+## HTTP 파이프라이닝
+
+HTTP/1.1은 각 해당 응답을 받기 전에 단일 연결에서 여러 요청을 보낼 수 있는 기능을 지원합니다. 서버는 HTTP 파이프라이닝을 지원해야 하지만, 이는 이제 일반적으로 구현 문제로 인식되고 있습니다. 브라우저에서는 활성화되어 있지 않으며, HTTP 요청이 통과하는 프록시에서 반드시 활성화되어 있지 않을 수 있습니다.
+
+Uvicorn은 파이프라이닝을 실용적으로 지원합니다. 파이프라인된 HTTP 요청을 큐에 넣고 기본 전송에서 읽기를 일시 중지합니다. 각 응답이 차례로 처리될 때까지 파이프라인된 요청의 처리를 시작하지 않습니다.
