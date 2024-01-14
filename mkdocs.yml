@@ -1,5 +1,5 @@
 site_name: Uvicorn Korean
-site_description: The lightning-fast ASGI server.
+site_description: 번개처럼 빠른 ASGI 서버
 
 theme:
   name: "material"

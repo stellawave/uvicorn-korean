@@ -25,7 +25,7 @@ Uvicorn이 지원해줘야 할 것을 발견하셨나요?
 그 후에 해당 토론을 "Issue"로 격상할 필요가 있는지, 
 또는 풀 리퀘스트를 고려할지 여부를 결정할 수 있습니다.
 
-버그 신고의 경우 가능한 한 사세하게 설명하고,
+버그 신고의 경우 가능한 상세하게 설명하고,
 다음과 같이 최대한 많은 정보를 제공해주세요:
 
 - 운영체제 플랫폼
@@ -74,7 +74,7 @@ $ scripts/install
 $ scripts/test
 ```
 
-추가 인자는 `pytest`로 전달됩니다. 자세한 내용은 [pytest 문서](https://docs.pytest.org/en/latest/how-to/usage.html)를 참조하십시오.
+추가 인수는 `pytest`에 전달됩니다. 자세한 내용은 [pytest 문서](https://docs.pytest.org/en/latest/how-to/usage.html)를 참조하십시오.
 
 예를 들어 단일 테스트 스크립트를 실행하는 경우:
 
@@ -115,7 +115,7 @@ $ scripts/docs serve
 
 다음은 테스트 스위트가 실패할 수 있는 몇 가지 일반적인 경우입니다:
 
-### 실패한 작업 확인
+### Check 작업 실패
 
 <p align="center" style="margin: 0 0 10px">
   <img src="https://raw.githubusercontent.com/encode/uvicorn/master/docs/img/gh-actions-fail-check.png" alt='Failing GitHub action lint job'>
@@ -132,7 +132,7 @@ $ scripts/check
 
 ### 문서 작업 실패
 
-이 작업이 실패한다는 것은 문서 구축이 실패했다는 것을 의미합니다. 이는 잘못된 마크다운 또는 `mkdocs.yml` 내의 누락된 구성과 같은 다양한 이유로 발생할 수 있습니다.
+이 작업이 실패한다는 것은 문서 구축이 실패했다는 것을 의미합니다. 이는 잘못된 마크다운 또는 `mkdocs.yml` 내의 구성 요소 누락과 같은 다양한 이유로 발생할 수 있습니다.
 
 ### Python 3.X 작업 실패
 
@@ -142,7 +142,7 @@ $ scripts/check
 
 `=== 1 failed, 354 passed, 1 skipped, 1 xfailed in 37.08s ===`
 
-테스트가 성공하더라도 커버리지가 현재 임계값에 도달하지 않으면, 커버리지 보고서 아래에 이 메시지가 표시됩니다:
+테스트가 성공하더라도 커버리지가 현재 임계값에 도달하지 못했다면, 커버리지 보고서 아래에 이 메시지가 표시됩니다:
 
 `Coverage failure: total of 88 is less than fail-under=95`
 
